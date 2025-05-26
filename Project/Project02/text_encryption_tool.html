@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本加密解密工具</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .mode-switch {
+            margin-bottom: 20px;
+        }
+        .mode-switch button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        .mode-switch button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .mode-switch button:not(.active):hover {
+            background-color: #e9ecef;
+        }
+        .mode-switch button:active {
+            transform: scale(0.98);
+        }
+        textarea {
+            width: calc(100% - 20px);
+            height: 150px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .options {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .options label {
+            margin-right: 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .options input[type="radio"] {
+            margin-right: 5px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        #processButton {
+            background-color: #28a745;
+            color: white;
+        }
+        #processButton:hover {
+            background-color: #218838;
+        }
+        #copyButton {
+            background-color: #17a2b8;
+            color: white;
+        }
+        #copyButton:hover {
+            background-color: #138496;
+        }
+        button:active {
+             transform: scale(0.98);
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文本加密解密工具</h1>
+
+        <div class="mode-switch">
+            <button id="encryptModeBtn" class="active">加密模式</button>
+            <button id="decryptModeBtn">解密模式</button>
+        </div>
+
+        <textarea id="inputText" placeholder="输入文本..."></textarea>
+        <textarea id="outputText" placeholder="输出结果..." readonly></textarea>
+
+        <div class="options">
+            <label><input type="radio" name="method" value="unicode" checked> Unicode编码</label>
+            <label><input type="radio" name="method" value="simpleReplace"> 简单字符替换</label>
+            <label><input type="radio" name="method" value="base64"> Base64编码</label>
+        </div>
+
+        <div class="buttons">
+            <button id="processButton">加密</button>
+            <button id="copyButton">复制结果</button>
+        </div>
+
+        <div class="footer">
+            <p>由AI助手开发</p>
+        </div>
+    </div>
+
+    <script>
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const processButton = document.getElementById('processButton');
+        const copyButton = document.getElementById('copyButton');
+        const encryptModeBtn = document.getElementById('encryptModeBtn');
+        const decryptModeBtn = document.getElementById('decryptModeBtn');
+        const methodRadios = document.querySelectorAll('input[name="method"]');
+
+        let currentMode = 'encrypt'; // 'encrypt' or 'decrypt'
+
+        // Simple character replacement map (example)
+        const simpleReplaceMap = {
+            'a': '@', 'b': '#', 'c': '$', 'd': '%', 'e': '^', 'f': '&', 'g': '*', 'h': '(', 'i': ')', 'j': '-', 'k': '_', 'l': '+', 'm': '=',
+            'n': '{', 'o': '}', 'p': '[', 'q': ']', 'r': ':', 's': ';', 't': '"', 'u': "'", 'v': '<', 'w': '>', 'x': ',', 'y': '.', 'z': '/',
+            'A': '!', 'B': '?', 'C': '|', 'D': '\\', 'E': '~', 'F': '`', 'G': '1', 'H': '2', 'I': '3', 'J': '4', 'K': '5', 'L': '6', 'M': '7',
+            'N': '8', 'O': '9', 'P': '0', 'Q': 'A', 'R': 'B', 'S': 'C', 'T': 'D', 'U': 'E', 'V': 'F', 'W': 'G', 'X': 'H', 'Y': 'I', 'Z': 'J',
+            '0': 'z', '1': 'y', '2': 'x', '3': 'w', '4': 'v', '5': 'u', '6': 't', '7': 's', '8': 'r', '9': 'q',
+            ' ': '|space|' // Example for space
+        };
+
+        // Reverse map for simple replacement decryption
+        const simpleReplaceReverseMap = Object.fromEntries(
+            Object.entries(simpleReplaceMap).map(([key, value]) => [value, key])
+        );
+
+        // --- Encryption Functions ---
+        function encryptUnicode(text) {
+            return text.split('').map(char => {
+                const code = char.charCodeAt(0);
+                return '\\u' + code.toString(16).padStart(4, '0');
+            }).join('');
+        }
+
+        function encryptSimpleReplace(text) {
+            let result = '';
+            for (const char of text) {
+                result += simpleReplaceMap[char] || char; // Use replacement or original char
+            }
+            return result;
+        }
+
+        function encryptBase64(text) {
+            return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g,
+                function toSolidBytes(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        // --- Decryption Functions ---
+        function decryptUnicode(text) {
+             try {
+                // Find all \uXXXX patterns
+                const unicodeRegex = /\\u([0-9a-fA-F]{4})/g;
+                return text.replace(unicodeRegex, (match, hex) => {
+                    return String.fromCharCode(parseInt(hex, 16));
+                });
+            } catch (e) {
+                console.error("Unicode decryption failed:", e);
+                return "解密失败：无效的Unicode编码";
+            }
+        }
+
+        function decryptSimpleReplace(text) {
+            let result = '';
+            // This simple reverse map works for single character replacements.
+            // For multi-character replacements like '|space|', a more complex approach is needed.
+            // For this example, we'll handle the space replacement specifically.
+            text = text.replace(/\|space\|/g, ' '); // Handle space first
+
+            for (const char of text) {
+                 result += simpleReplaceReverseMap[char] || char; // Use original or replacement char
+            }
+            return result;
+        }
+
+        function decryptBase64(text) {
+            try {
+                // Basic check for valid Base64 characters
+                if (!/^[a-zA-Z0-9+/=]*$/.test(text)) {
+                     return "解密失败：包含无效的Base64字符";
+                }
+                 // Check padding
+                if (text.length % 4 !== 0) {
+                     return "解密失败：Base64长度无效";
+                }
+
+                const binaryString = atob(text);
+                 // Decode URI component to handle multi-byte characters correctly
+                return decodeURIComponent(binaryString.split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+            } catch (e) {
+                console.error("Base64 decryption failed:", e);
+                return "解密失败：无效的Base64编码";
+            }
+        }
+
+        // --- Auto-detection (for decryption mode) ---
+        function detectEncryptionType(text) {
+            // Simple check for Base64: contains only allowed characters and correct padding
+            if (/^[a-zA-Z0-9+/=]*$/.test(text) && text.length % 4 === 0) {
+                // Further check: try decoding and see if it looks like valid text
+                try {
+                    const decoded = atob(text);
+                    // Check if decoded string contains mostly printable characters
+                    // This is a heuristic and not foolproof
+                    const printableRatio = decoded.replace(/[\x00-\x1F\x7F-\x9F]/g, '').length / decoded.length;
+                    if (printableRatio > 0.8) { // Arbitrary threshold
+                         return 'base64';
+                    }
+                } catch (e) {
+                    // Not valid Base64
+                }
+            }
+
+            // Simple check for Unicode escape sequences
+            if (/\\u([0-9a-fA-F]{4})/.test(text)) {
+                 return 'unicode';
+            }
+
+            // Simple replacement is hard to detect reliably without the map.
+            // If it doesn't look like Base64 or Unicode, we might assume simple replacement or plain text.
+            // For this tool, we'll prioritize Base64 and Unicode detection.
+            // If neither is detected, the user might need to manually select the method.
+            // We won't auto-select simpleReplace to avoid incorrect decryption attempts.
+            return null; // Cannot confidently detect
+        }
+
+
+        // --- Event Handlers ---
+        encryptModeBtn.addEventListener('click', () => {
+            currentMode = 'encrypt';
+            encryptModeBtn.classList.add('active');
+            decryptModeBtn.classList.remove('active');
+            processButton.textContent = '加密';
+            // Enable all method options in encrypt mode
+            methodRadios.forEach(radio => radio.disabled = false);
+            // Reset radio button selection if needed (optional)
+            document.querySelector('input[value="unicode"]').checked = true;
+            outputText.value = ''; // Clear output on mode switch
+            outputText.placeholder = '输出结果...';
+        });
+
+        decryptModeBtn.addEventListener('click', () => {
+            currentMode = 'decrypt';
+            decryptModeBtn.classList.add('active');
+            encryptModeBtn.classList.remove('active');
+            processButton.textContent = '解密';
+            // In decrypt mode, auto-detection is attempted, but user can override.
+            // Keep method options enabled.
+            outputText.value = ''; // Clear output on mode switch
+            outputText.placeholder = '输出结果 (尝试自动检测或手动选择方法)...';
+        });
+
+        processButton.addEventListener('click', () => {
+            const text = inputText.value;
+            let result = '';
+            let selectedMethod = document.querySelector('input[name="method"]:checked').value;
+
+            if (currentMode === 'encrypt') {
+                switch (selectedMethod) {
+                    case 'unicode':
+                        result = encryptUnicode(text);
+                        break;
+                    case 'simpleReplace':
+                        result = encryptSimpleReplace(text);
+                        break;
+                    case 'base64':
+                        result = encryptBase64(text);
+                        break;
+                }
+            } else { // decrypt mode
+                // Attempt auto-detection first if input is not empty
+                let detectedMethod = null;
+                if (text.trim() !== '') {
+                     detectedMethod = detectEncryptionType(text);
+                }
+
+
+                if (detectedMethod) {
+                    console.log("Detected method:", detectedMethod);
+                    // Optionally select the detected radio button
+                    const detectedRadio = document.querySelector(`input[value="${detectedMethod}"]`);
+                    if (detectedRadio) {
+                         detectedRadio.checked = true;
+                         selectedMethod = detectedMethod; // Use detected method
+                    } else {
+                         // If detected method doesn't match available radios, fall back to selected
+                         console.warn("Detected method does not match available options, using manually selected.");
+                    }
+                } else {
+                     console.log("No method confidently detected, using manually selected:", selectedMethod);
+                     // Use the manually selected method if detection fails
+                }
+
+
+                switch (selectedMethod) {
+                    case 'unicode':
+                        result = decryptUnicode(text);
+                        break;
+                    case 'simpleReplace':
+                        result = decryptSimpleReplace(text);
+                        break;
+                    case 'base64':
+                        result = decryptBase64(text);
+                        break;
+                    default:
+                        result = "请选择一种解密方法或输入有效的加密文本";
+                        break;
+                }
+            }
+
+            outputText.value = result;
+        });
+
+        copyButton.addEventListener('click', () => {
+            outputText.select();
+            outputText.setSelectionRange(0, 99999); // For mobile devices
+            try {
+                document.execCommand('copy');
+                // Optional: Provide visual feedback
+                copyButton.textContent = '已复制!';
+                setTimeout(() => {
+                    copyButton.textContent = '复制结果';
+                }, 2000);
+            } catch (err) {
+                console.error('无法复制文本: ', err);
+                // Optional: Provide feedback to user
+                copyButton.textContent = '复制失败!';
+                 setTimeout(() => {
+                    copyButton.textContent = '复制结果';
+                }, 2000);
+            }
+        });
+
+        // Initial state setup
+        encryptModeBtn.click(); // Start in encrypt mode
+    </script>
+</body>
+</html>

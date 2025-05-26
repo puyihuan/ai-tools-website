@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>夸克分享文案生成器</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #eee;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>夸克分享文案生成器</h1>
+    <p>请在下方输入夸克网盘分享文案，支持多条同时处理：</p>
+    <textarea id="inputText" placeholder="粘贴夸克分享文案到这里..."></textarea>
+    <button onclick="generateCopy()">生成并复制</button>
+    <div id="output"></div>
+
+    <script>
+        function generateCopy() {
+            const inputText = document.getElementById('inputText').value;
+            const outputDiv = document.getElementById('output');
+            let outputText = '';
+
+            const nameRegex = /分享了「(.*?)」/g;
+            const linkRegex = /链接：(https:\/\/pan\.quark\.cn\/s\/[a-zA-Z0-9]+)/g;
+
+            const nameMatches = [...inputText.matchAll(nameRegex)];
+            const linkMatches = [...inputText.matchAll(linkRegex)];
+
+            if (nameMatches.length > 0 && nameMatches.length === linkMatches.length) {
+                for (let i = 0; i < nameMatches.length; i++) {
+                    const fileName = nameMatches[i][1];
+                    const fileLink = linkMatches[i][1];
+                    outputText += `「${fileName}」 夸克网盘链接：${fileLink}\n\n`;
+                }
+                outputDiv.textContent = outputText.trim();
+
+                navigator.clipboard.writeText(outputText.trim()).then(() => {
+                    alert('生成成功并已复制到剪贴板！');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('生成成功，但复制失败，请手动复制。');
+                });
+
+            } else {
+                outputDiv.textContent = ''; // Clear previous output
+                alert('未检测到有效的夸克分享文案或文案格式不匹配。');
+            }
+        }
+    </script>
+</body>
+</html>

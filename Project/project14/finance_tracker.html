@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人理财预算追踪器</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-section, .summary-section, .transactions-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .form-section h2, .summary-section h2, .transactions-section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group select,
+        .input-group input[type="date"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .summary-item {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .summary-item span {
+            font-weight: bold;
+        }
+        .transactions-list {
+            list-style: none;
+            padding: 0;
+        }
+        .transactions-list li {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .transaction-details {
+            flex-grow: 1;
+        }
+        .transaction-details strong {
+            margin-right: 10px;
+        }
+        .transaction-actions button {
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+         .transaction-actions .delete-btn {
+            background-color: #dc3545;
+        }
+         .transaction-actions .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>个人理财预算追踪器</h1>
+
+        <div class="form-section">
+            <h2>添加交易</h2>
+            <div class="input-group">
+                <label for="type">类型:</label>
+                <select id="type">
+                    <option value="expense">支出</option>
+                    <option value="income">收入</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="description">描述:</label>
+                <input type="text" id="description" placeholder="例如：午餐，工资">
+            </div>
+            <div class="input-group">
+                <label for="amount">金额:</label>
+                <input type="number" id="amount" placeholder="输入金额">
+            </div>
+             <div class="input-group">
+                <label for="category">分类:</label>
+                <input type="text" id="category" placeholder="例如：餐饮，交通">
+            </div>
+             <div class="input-group">
+                <label for="date">日期:</label>
+                <input type="date" id="date">
+            </div>
+            <button id="addTransactionBtn">添加交易</button>
+        </div>
+
+        <div class="summary-section">
+            <h2>财务概览</h2>
+            <div class="summary-item">总收入: <span id="totalIncome">0.00</span></div>
+            <div class="summary-item">总支出: <span id="totalExpense">0.00</span></div>
+            <div class="summary-item">净结余: <span id="balance">0.00</span></div>
+        </div>
+
+        <div class="transactions-section">
+            <h2>交易记录</h2>
+            <ul class="transactions-list" id="transactionsList">
+                <!-- Transactions will be listed here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const typeSelect = document.getElementById('type');
+        const descriptionInput = document.getElementById('description');
+        const amountInput = document.getElementById('amount');
+        const categoryInput = document.getElementById('category');
+        const dateInput = document.getElementById('date');
+        const addTransactionBtn = document.getElementById('addTransactionBtn');
+        const totalIncomeSpan = document.getElementById('totalIncome');
+        const totalExpenseSpan = document.getElementById('totalExpense');
+        const balanceSpan = document.getElementById('balance');
+        const transactionsList = document.getElementById('transactionsList');
+
+        let transactions = JSON.parse(localStorage.getItem('financeTransactions')) || [];
+
+        function renderTransactions() {
+            transactionsList.innerHTML = '';
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            transactions.forEach((transaction, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div class="transaction-details">
+                        <strong>${transaction.date}</strong>
+                        ${transaction.description} (${transaction.category}) - <span style="color: ${transaction.type === 'income' ? 'green' : 'red'};">${transaction.type === 'expense' ? '-' : '+'}${transaction.amount.toFixed(2)}</span>
+                    </div>
+                    <div class="transaction-actions">
+                        <button class="delete-btn" data-index="${index}">删除</button>
+                    </div>
+                `;
+                transactionsList.appendChild(listItem);
+
+                if (transaction.type === 'income') {
+                    totalIncome += transaction.amount;
+                } else {
+                    totalExpense += transaction.amount;
+                }
+            });
+
+            totalIncomeSpan.textContent = totalIncome.toFixed(2);
+            totalExpenseSpan.textContent = totalExpense.toFixed(2);
+            balanceSpan.textContent = (totalIncome - totalExpense).toFixed(2);
+
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    deleteTransaction(index);
+                });
+            });
+        }
+
+        function addTransaction() {
+            const type = typeSelect.value;
+            const description = descriptionInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+            const category = categoryInput.value.trim();
+            const date = dateInput.value;
+
+            if (!description || isNaN(amount) || amount <= 0 || !date) {
+                alert('请填写完整的交易信息 (描述, 金额, 日期)');
+                return;
+            }
+
+            const newTransaction = {
+                type,
+                description,
+                amount,
+                category,
+                date
+            };
+
+            transactions.push(newTransaction);
+            localStorage.setItem('financeTransactions', JSON.stringify(transactions));
+            renderTransactions();
+            clearForm();
+        }
+
+        function deleteTransaction(index) {
+            transactions.splice(index, 1);
+            localStorage.setItem('financeTransactions', JSON.stringify(transactions));
+            renderTransactions();
+        }
+
+        function clearForm() {
+            descriptionInput.value = '';
+            amountInput.value = '';
+            categoryInput.value = '';
+            dateInput.value = '';
+            typeSelect.value = 'expense';
+        }
+
+        addTransactionBtn.addEventListener('click', addTransaction);
+
+        // Set default date to today
+        dateInput.valueAsDate = new Date();
+
+        // Initial render
+        renderTransactions();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节日倒计时</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="date"],
+        .input-group select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #countdown-display {
+            margin-top: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #holiday-name {
+            margin-top: 10px;
+            font-size: 1.5em;
+            color: #555;
+        }
+        #holiday-image {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        #notes {
+            margin-top: 15px;
+            text-align: left;
+        }
+        #notes label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        #notes textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            min-height: 80px;
+        }
+         .holiday-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .holiday-list h3 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .holiday-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .holiday-item:hover {
+            background-color: #f0f0f0;
+        }
+        .holiday-item span {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .holiday-item button {
+            padding: 3px 8px;
+            font-size: 12px;
+            background-color: #dc3545;
+        }
+         .holiday-item button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>节日倒计时</h1>
+
+        <div class="input-group">
+            <label for="holidaySelect">选择节日:</label>
+            <select id="holidaySelect">
+                <option value="">-- 选择或添加节日 --</option>
+                <!-- Preset and custom holidays will be added here -->
+            </select>
+        </div>
+
+        <div id="countdown-display"></div>
+        <div id="holiday-name"></div>
+        <img id="holiday-image" src="" alt="节日图片" style="display: none;">
+
+        <div id="notes" style="display: none;">
+            <label for="holidayNotes">节日备注:</label>
+            <textarea id="holidayNotes" placeholder="添加您的节日备注"></textarea>
+        </div>
+
+
+        <div class="form-section">
+            <h2>添加自定义节日</h2>
+            <div class="input-group">
+                <label for="customHolidayName">节日名称:</label>
+                <input type="text" id="customHolidayName" placeholder="例如：我的生日">
+            </div>
+            <div class="input-group">
+                <label for="customHolidayDate">日期:</label>
+                <input type="date" id="customHolidayDate">
+            </div>
+            <button id="addCustomHolidayBtn">添加节日</button>
+        </div>
+
+        <div class="holiday-list">
+            <h3>我的节日列表</h3>
+            <div id="customHolidayList">
+                <!-- Custom holidays will be listed here -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const holidaySelect = document.getElementById('holidaySelect');
+        const countdownDisplay = document.getElementById('countdown-display');
+        const holidayNameDisplay = document.getElementById('holiday-name');
+        const holidayImage = document.getElementById('holiday-image');
+        const notesSection = document.getElementById('notes');
+        const holidayNotesTextarea = document.getElementById('holidayNotes');
+        const customHolidayNameInput = document.getElementById('customHolidayName');
+        const customHolidayDateInput = document.getElementById('customHolidayDate');
+        const addCustomHolidayBtn = document.getElementById('addCustomHolidayBtn');
+        const customHolidayListDiv = document.getElementById('customHolidayList');
+
+        const presetHolidays = [
+            { name: '元旦', date: '2025-01-01', image: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=元旦' },
+            { name: '春节', date: '2025-01-29', image: 'https://via.placeholder.com/150/FF4500/FFFFFF?text=春节' },
+            { name: '清明节', date: '2025-04-04', image: 'https://via.placeholder.com/150/808080/FFFFFF?text=清明节' },
+            { name: '劳动节', date: '2025-05-01', image: 'https://via.placeholder.com/150/008000/FFFFFF?text=劳动节' },
+            { name: '端午节', date: '2025-05-31', image: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=端午节' },
+            { name: '中秋节', date: '2025-10-06', image: 'https://via.placeholder.com/150/800080/FFFFFF?text=中秋节' },
+            { name: '国庆节', date: '2025-10-01', image: 'https://via.placeholder.com/150/FF8C00/FFFFFF?text=国庆节' },
+            { name: '圣诞节', date: '2025-12-25', image: 'https://via.placeholder.com/150/B22222/FFFFFF?text=圣诞节' },
+        ];
+
+        let customHolidays = JSON.parse(localStorage.getItem('customHolidays')) || [];
+        let countdownInterval = null;
+
+        function renderHolidaySelect() {
+            holidaySelect.innerHTML = '<option value="">-- 选择或添加节日 --</option>';
+            presetHolidays.forEach(holiday => {
+                const option = document.createElement('option');
+                option.value = holiday.date;
+                option.textContent = holiday.name;
+                option.dataset.type = 'preset';
+                option.dataset.image = holiday.image;
+                holidaySelect.appendChild(option);
+            });
+            customHolidays.forEach((holiday, index) => {
+                const option = document.createElement('option');
+                option.value = holiday.date;
+                option.textContent = holiday.name;
+                option.dataset.type = 'custom';
+                option.dataset.index = index;
+                holidaySelect.appendChild(option);
+            });
+        }
+
+        function renderCustomHolidayList() {
+            customHolidayListDiv.innerHTML = '';
+            customHolidays.forEach((holiday, index) => {
+                const holidayItem = document.createElement('div');
+                holidayItem.classList.add('holiday-item');
+                holidayItem.innerHTML = `
+                    <span>${holiday.name} (${holiday.date})</span>
+                    <button data-index="${index}">删除</button>
+                `;
+                holidayItem.addEventListener('click', function(event) {
+                    // Prevent selecting holiday when clicking delete button
+                    if (!event.target.classList.contains('delete-btn')) {
+                         holidaySelect.value = holiday.date;
+                         displayCountdown();
+                    }
+                });
+                 holidayItem.querySelector('button').addEventListener('click', function() {
+                    const indexToDelete = parseInt(this.dataset.index);
+                    deleteCustomHoliday(indexToDelete);
+                });
+                customHolidayListDiv.appendChild(holidayItem);
+            });
+        }
+
+
+        function displayCountdown() {
+            const selectedOption = holidaySelect.options[holidaySelect.selectedIndex];
+            const holidayDateString = selectedOption.value;
+            const holidayName = selectedOption.textContent;
+            const holidayType = selectedOption.dataset.type;
+            const holidayImageSrc = selectedOption.dataset.image;
+            const customHolidayIndex = selectedOption.dataset.index;
+
+            if (!holidayDateString) {
+                countdownDisplay.textContent = '';
+                holidayNameDisplay.textContent = '';
+                holidayImage.style.display = 'none';
+                notesSection.style.display = 'none';
+                clearInterval(countdownInterval);
+                return;
+            }
+
+            const holidayDate = new Date(holidayDateString).getTime();
+
+            // Display holiday name and image
+            holidayNameDisplay.textContent = `距离 ${holidayName} 还有:`;
+            if (holidayType === 'preset' && holidayImageSrc) {
+                holidayImage.src = holidayImageSrc;
+                holidayImage.style.display = 'block';
+            } else {
+                holidayImage.style.display = 'none';
+            }
+
+            // Display notes section for custom holidays
+            if (holidayType === 'custom') {
+                notesSection.style.display = 'block';
+                holidayNotesTextarea.value = customHolidays[customHolidayIndex].notes || '';
+                holidayNotesTextarea.dataset.index = customHolidayIndex; // Store index for saving notes
+            } else {
+                notesSection.style.display = 'none';
+                holidayNotesTextarea.value = '';
+                holidayNotesTextarea.dataset.index = '';
+            }
+
+
+            clearInterval(countdownInterval); // Clear previous interval
+
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = holidayDate - now;
+
+                if (distance < 0) {
+                    countdownDisplay.textContent = "节日已过！";
+                    clearInterval(countdownInterval);
+                    // TODO: Implement blessing animation
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownDisplay.textContent = `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+            }, 1000);
+        }
+
+        function addCustomHoliday() {
+            const name = customHolidayNameInput.value.trim();
+            const date = customHolidayDateInput.value;
+
+            if (!name || !date) {
+                alert('请输入节日名称和日期');
+                return;
+            }
+
+            const newHoliday = { name, date, notes: '' };
+            customHolidays.push(newHoliday);
+            localStorage.setItem('customHolidays', JSON.stringify(customHolidays));
+            renderHolidaySelect();
+            renderCustomHolidayList();
+            clearCustomHolidayForm();
+        }
+
+        function deleteCustomHoliday(index) {
+            customHolidays.splice(index, 1);
+            localStorage.setItem('customHolidays', JSON.stringify(customHolidays));
+            renderHolidaySelect();
+            renderCustomHolidayList();
+            // If the deleted holiday was selected, clear the display
+            if (holidaySelect.options[holidaySelect.selectedIndex]?.dataset.type === 'custom' && parseInt(holidaySelect.options[holidaySelect.selectedIndex]?.dataset.index) === index) {
+                holidaySelect.value = "";
+                displayCountdown();
+            }
+        }
+
+        function clearCustomHolidayForm() {
+            customHolidayNameInput.value = '';
+            customHolidayDateInput.value = '';
+        }
+
+        function saveHolidayNotes() {
+            const index = parseInt(holidayNotesTextarea.dataset.index);
+            if (!isNaN(index) && customHolidays[index]) {
+                customHolidays[index].notes = holidayNotesTextarea.value.trim();
+                localStorage.setItem('customHolidays', JSON.stringify(customHolidays));
+            }
+        }
+
+
+        holidaySelect.addEventListener('change', displayCountdown);
+        addCustomHolidayBtn.addEventListener('click', addCustomHoliday);
+        holidayNotesTextarea.addEventListener('input', saveHolidayNotes);
+
+
+        // Initial render
+        renderHolidaySelect();
+        renderCustomHolidayList();
+        displayCountdown(); // Display countdown for the initially selected holiday (if any)
+
+    </script>
+</body>
+</html>

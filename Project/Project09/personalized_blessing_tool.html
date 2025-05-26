@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性化祝福生成工具</title>
+    <style>
+        /* CSS 样式将在这里添加 */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .input-section, .output-section {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-section label, .options label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .input-section input[type="text"],
+        .input-section select,
+        textarea {
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+         input[type="text"]:focus,
+         select:focus,
+         textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .options {
+            margin-bottom: 20px;
+        }
+        .options label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .options input[type="radio"] {
+            margin-right: 5px;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-right: 10px;
+        }
+        button:last-child {
+            margin-right: 0;
+        }
+        #generateBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        #generateBtn:hover {
+            background-color: #218838;
+        }
+        #copyBtn {
+            background-color: #17a2b8;
+            color: white;
+        }
+        #copyBtn:hover {
+            background-color: #138496;
+        }
+        button:active {
+             transform: scale(0.98);
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>个性化祝福生成工具</h1>
+
+        <div class="input-section">
+            <label for="recipientName">收礼人姓名:</label>
+            <input type="text" id="recipientName" placeholder="输入姓名">
+
+            <label for="gender">性别:</label>
+            <select id="gender">
+                <option value="neutral">不确定</option>
+                <option value="male">男</option>
+                <option value="female">女</option>
+            </select>
+
+            <label for="age">年龄:</label>
+            <input type="text" id="age" placeholder="输入年龄 (可选)">
+
+            <label for="relationship">关系:</label>
+            <select id="relationship">
+                <option value="friend">朋友</option>
+                <option value="family">家人</option>
+                <option value="colleague">同事</option>
+                <option value="other">其他</option>
+            </select>
+
+            <label for="blessingType">祝福类型:</label>
+            <select id="blessingType">
+                <option value="birthday">生日</option>
+                <option value="holiday">节日</option>
+                <option value="graduation">毕业</option>
+                <option value="promotion">升职</option>
+                <option value="other">其他</option>
+            </select>
+
+            <div class="options">
+                <label>风格:</label>
+                <label><input type="radio" name="style" value="formal" checked> 正式</label>
+                <label><input type="radio" name="style" value="humorous"> 幽默</label>
+                <label><input type="radio" name="style" value="warm"> 温馨</label>
+                <label><input type="radio" name="style" value="poetic"> 诗意</label>
+            </div>
+        </div>
+
+        <button id="generateBtn">生成祝福语</button>
+
+        <div class="output-section">
+            <label for="blessingOutput">生成的祝福语:</label>
+            <textarea id="blessingOutput" placeholder="生成的祝福语将显示在这里..." readonly></textarea>
+        </div>
+
+        <button id="copyBtn">一键复制</button>
+
+        <div class="footer">
+            <p>由AI助手开发</p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript 逻辑将在这里添加
+        const recipientNameInput = document.getElementById('recipientName');
+        const genderSelect = document.getElementById('gender');
+        const ageInput = document.getElementById('age');
+        const relationshipSelect = document.getElementById('relationship');
+        const blessingTypeSelect = document.getElementById('blessingType');
+        const styleRadios = document.querySelectorAll('input[name="style"]');
+        const generateBtn = document.getElementById('generateBtn');
+        const blessingOutputTextarea = document.getElementById('blessingOutput');
+        const copyBtn = document.getElementById('copyBtn');
+
+        // 祝福语模板和规则库 (示例，需要根据需求完善)
+        const blessings = {
+            "birthday": {
+                "formal": [
+                    "尊敬的{姓名}，值此生日之际，谨祝您生日快乐，身体健康，事业顺利！",
+                    "祝{姓名}生日快乐，愿您在新的一岁里，万事如意，幸福安康！"
+                ],
+                "humorous": [
+                    "{姓名}，生日快乐！又向不惑之年迈进了一步？开个玩笑，愿你永远年轻！",
+                    "祝{姓名}生日快乐！愿你的烦恼像你的年龄一样，越来越少！"
+                ],
+                "warm": [
+                    "亲爱的{姓名}，生日快乐！愿所有的美好都如期而至，愿你每天都充满阳光。",
+                    "祝我最亲爱的{姓名}生日快乐！感谢生命中有你，愿你永远开心幸福！"
+                ],
+                "poetic": [
+                    "岁月如歌，情深意长。{姓名}，生日快乐！愿诗意与远方常伴你左右。",
+                    "流年笑掷，未来可期。{姓名}，生日快乐！愿你的生命之花绚烂绽放。"
+                ]
+            },
+            "holiday": {
+                 "formal": [
+                    "尊敬的{姓名}，值此佳节，祝您节日快乐，阖家幸福！",
+                    "祝{姓名}节日愉快，愿您度过一个欢乐祥和的节日！"
+                ],
+                "warm": [
+                    "亲爱的{姓名}，节日快乐！愿这个节日带给你温暖和快乐。",
+                    "祝{姓名}节日快乐！愿你和家人共享美好时光！"
+                ]
+                // ... 其他风格和节日祝福
+            },
+            // ... 其他祝福类型
+        };
+
+        // 规则 (示例，需要根据需求完善)
+        function applyRules(blessing, name, gender, age, relationship, style) {
+            let result = blessing;
+
+            // 替换姓名占位符
+            result = result.replace(/{姓名}/g, name || '朋友'); // 如果姓名为空，默认用“朋友”
+
+            // 根据性别调整称谓或祝福语 (示例)
+            if (gender === 'female' && style === 'warm') {
+                 result = result.replace('尊敬的', '亲爱的');
+            }
+
+            // 根据年龄调整祝福语 (示例)
+            const ageNum = parseInt(age);
+            if (!isNaN(ageNum)) {
+                if (ageNum < 18 && blessing.includes('事业顺利')) {
+                    result = result.replace('事业顺利', '学业有成');
+                }
+                // ... 更多年龄相关的规则
+            }
+
+            // 根据关系调整祝福语 (示例)
+            if (relationship === 'family' && style === 'warm') {
+                 result = result.replace('朋友', '家人');
+            }
+
+            // ... 更多规则
+
+            return result;
+        }
+
+
+        // 生成祝福语按钮点击事件
+        generateBtn.addEventListener('click', () => {
+            const name = recipientNameInput.value.trim();
+            const gender = genderSelect.value;
+            const age = ageInput.value.trim();
+            const relationship = relationshipSelect.value;
+            const blessingType = blessingTypeSelect.value;
+            const selectedStyle = document.querySelector('input[name="style"]:checked').value;
+
+            if (!name) {
+                alert("请输入收礼人姓名！");
+                return;
+            }
+
+            const availableBlessings = blessings[blessingType]?.[selectedStyle];
+
+            if (!availableBlessings || availableBlessings.length === 0) {
+                blessingOutputTextarea.value = "抱歉，没有找到符合条件的祝福语模板。";
+                return;
+            }
+
+            // 随机选择 3-5 条祝福语
+            const numToGenerate = Math.min(Math.max(3, Math.floor(Math.random() * 3) + 3), availableBlessings.length); // 生成3到5条，但不超过可用数量
+            const generatedBlessings = [];
+            const usedIndices = new Set();
+
+            while (generatedBlessings.length < numToGenerate) {
+                const randomIndex = Math.floor(Math.random() * availableBlessings.length);
+                if (!usedIndices.has(randomIndex)) {
+                    let blessing = availableBlessings[randomIndex];
+                    // 应用规则进行个性化
+                    blessing = applyRules(blessing, name, gender, age, relationship, selectedStyle);
+                    generatedBlessings.push(blessing);
+                    usedIndices.add(randomIndex);
+                }
+            }
+
+            blessingOutputTextarea.value = generatedBlessings.join('\n\n'); // 用两个换行分隔
+            blessingOutputTextarea.removeAttribute('readonly'); // 允许编辑
+        });
+
+        // 一键复制按钮点击事件
+        copyBtn.addEventListener('click', () => {
+            blessingOutputTextarea.select();
+            blessingOutputTextarea.setSelectionRange(0, 99999); // For mobile devices
+            try {
+                document.execCommand('copy');
+                copyBtn.textContent = '已复制!';
+                setTimeout(() => {
+                    copyBtn.textContent = '一键复制';
+                }, 2000);
+            } catch (err) {
+                console.error('无法复制文本: ', err);
+                copyBtn.textContent = '复制失败!';
+                 setTimeout(() => {
+                    copyBtn.textContent = '一键复制';
+                }, 2000);
+            }
+        });
+
+    </script>
+</body>
+</html>

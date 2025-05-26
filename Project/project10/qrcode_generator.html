@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码生成工具</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .input-group input[type="text"],
+        .input-group select,
+        .input-group input[type="color"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .input-group input[type="color"] {
+            padding: 5px;
+            height: 40px;
+            width: calc(100% - 12px);
+        }
+        #qrcode {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        #qrcode canvas {
+            border: 1px solid #eee;
+        }
+        .button-group {
+            margin-top: 20px;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .button-group button:hover {
+            background-color: #0056b3;
+        }
+        .icon-upload {
+            margin-top: 15px;
+            text-align: left;
+        }
+        .icon-upload label {
+             display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .icon-upload input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            width: calc(100% - 22px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>二维码生成工具</h1>
+
+        <div class="input-group">
+            <label for="text">输入内容 (文本/URL/联系信息):</label>
+            <input type="text" id="text" placeholder="输入您要生成二维码的内容">
+        </div>
+
+        <div class="input-group">
+            <label for="size">尺寸:</label>
+            <select id="size">
+                <option value="128">小 (128x128)</option>
+                <option value="256" selected>中 (256x256)</option>
+                <option value="512">大 (512x512)</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="color-dark">前景色:</label>
+            <input type="color" id="color-dark" value="#000000">
+        </div>
+
+        <div class="input-group">
+            <label for="color-light">背景色:</label>
+            <input type="color" id="color-light" value="#ffffff">
+        </div>
+
+        <div class="icon-upload">
+            <label for="icon-file">上传小图标 (可选):</label>
+            <input type="file" id="icon-file" accept="image/*">
+        </div>
+
+        <div id="qrcode"></div>
+
+        <div class="button-group">
+            <button id="download-btn">下载二维码</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        const textInput = document.getElementById('text');
+        const sizeSelect = document.getElementById('size');
+        const colorDarkInput = document.getElementById('color-dark');
+        const colorLightInput = document.getElementById('color-light');
+        const qrcodeDiv = document.getElementById('qrcode');
+        const downloadBtn = document.getElementById('download-btn');
+        const iconFileInput = document.getElementById('icon-file');
+
+        let qrcode = null;
+        let iconImage = null;
+
+        function generateQRCode() {
+            const text = textInput.value;
+            const size = parseInt(sizeSelect.value);
+            const colorDark = colorDarkInput.value;
+            const colorLight = colorLightInput.value;
+
+            if (!text) {
+                qrcodeDiv.innerHTML = '';
+                return;
+            }
+
+            qrcodeDiv.innerHTML = ''; // Clear previous QR code
+
+            qrcode = new QRCode(qrcodeDiv, {
+                text: text,
+                width: size,
+                height: size,
+                colorDark: colorDark,
+                colorLight: colorLight,
+                correctLevel: QRCode.CorrectLevel.H // High correction level for icon
+            });
+
+            // Add icon if uploaded
+            if (iconImage) {
+                const canvas = qrcodeDiv.querySelector('canvas');
+                const context = canvas.getContext('2d');
+                const qrSize = size;
+                const iconSize = qrSize * 0.2; // Icon size is 20% of QR code size
+                const center = qrSize / 2;
+                const iconX = center - iconSize / 2;
+                const iconY = center - iconSize / 2;
+
+                context.drawImage(iconImage, iconX, iconY, iconSize, iconSize);
+            }
+        }
+
+        textInput.addEventListener('input', generateQRCode);
+        sizeSelect.addEventListener('change', generateQRCode);
+        colorDarkInput.addEventListener('input', generateQRCode);
+        colorLightInput.addEventListener('input', generateQRCode);
+
+        iconFileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    iconImage = new Image();
+                    iconImage.onload = function() {
+                        generateQRCode(); // Regenerate QR code with icon
+                    }
+                    iconImage.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                iconImage = null;
+                generateQRCode(); // Regenerate QR code without icon
+            }
+        });
+
+
+        downloadBtn.addEventListener('click', function() {
+            const canvas = qrcodeDiv.querySelector('canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'qrcode.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+        });
+
+        // Initial QR code generation on page load
+        generateQRCode();
+
+    </script>
+</body>
+</html>

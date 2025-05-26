@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI 计算器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        .input-group input[type="number"],
+        .input-group select {
+            width: calc(100% - 22px);
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .input-group input[type="number"]:focus,
+        .input-group select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .input-group .error-message {
+            color: #e74c3c;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .result-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+            display: none; /* Hidden by default */
+        }
+        .result-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        .bmi-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .status-assessment {
+            font-size: 1.4em;
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .status-assessment.underweight { background-color: #f39c12; } /* Orange */
+        .status-assessment.normal { background-color: #28a745; }    /* Green */
+        .status-assessment.overweight { background-color: #e67e22; } /* Dark Orange */
+        .status-assessment.obese { background-color: #e74c3c; }     /* Red */
+
+        .bmi-chart-container {
+            width: 100%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px auto;
+            position: relative;
+        }
+        .bmi-chart-bar {
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            transition: width 0.5s ease-out;
+        }
+        .bmi-chart-bar.underweight { background-color: #f39c12; width: 18.5%; }
+        .bmi-chart-bar.normal { background-color: #28a745; left: 18.5%; width: 5.5%; } /* 24 - 18.5 = 5.5 */
+        .bmi-chart-bar.overweight { background-color: #e67e22; left: 24%; width: 3.5%; } /* 28 - 24 = 4 */
+        .bmi-chart-bar.obese { background-color: #e74c3c; left: 28%; width: 72%; } /* 100 - 28 = 72 */
+
+        .bmi-indicator {
+            position: absolute;
+            height: 100%;
+            width: 4px;
+            background-color: #34495e; /* Darker color for indicator */
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transition: left 0.5s ease-out;
+            z-index: 10;
+        }
+
+        .reference-info {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .reference-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .reference-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .reference-info li {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+            color: #666;
+        }
+        .reference-info li strong {
+            color: #333;
+        }
+
+        .health-advice {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #e8f5e9; /* Light green background */
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #d4edda;
+            color: #28a745;
+        }
+        .health-advice h3 {
+            color: #1e7e34;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .health-advice p {
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .bmi-value {
+                font-size: 2em;
+            }
+            .status-assessment {
+                font-size: 1.2em;
+            }
+            button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BMI 计算器</h1>
+
+        <div class="input-group">
+            <label for="weight">体重 (kg):</label>
+            <input type="number" id="weight" placeholder="请输入体重" min="1" step="0.1">
+            <div class="error-message" id="weight-error">请输入有效的体重。</div>
+        </div>
+
+        <div class="input-group">
+            <label for="height">身高:</label>
+            <input type="number" id="height" placeholder="请输入身高" min="1" step="0.1">
+            <select id="height-unit">
+                <option value="cm">厘米 (cm)</option>
+                <option value="m">米 (m)</option>
+            </select>
+            <div class="error-message" id="height-error">请输入有效的身高。</div>
+        </div>
+
+        <button onclick="calculateBMI()">计算 BMI</button>
+
+        <div class="result-section" id="result-section">
+            <h2>您的 BMI 结果</h2>
+            <div class="bmi-value" id="bmi-value">--</div>
+            <div class="status-assessment" id="status-assessment">--</div>
+
+            <div class="bmi-chart-container">
+                <div class="bmi-chart-bar underweight"></div>
+                <div class="bmi-chart-bar normal"></div>
+                <div class="bmi-chart-bar overweight"></div>
+                <div class="bmi-chart-bar obese"></div>
+                <div class="bmi-indicator" id="bmi-indicator"></div>
+            </div>
+
+            <div class="reference-info">
+                <h3>BMI 标准范围 (WHO):</h3>
+                <ul>
+                    <li><strong>偏瘦:</strong> BMI < 18.5</li>
+                    <li><strong>正常:</strong> 18.5 &le; BMI < 24</li>
+                    <li><strong>过重:</strong> 24 &le; BMI < 28</li>
+                    <li><strong>肥胖:</strong> BMI &ge; 28</li>
+                </ul>
+            </div>
+
+            <div class="health-advice" id="health-advice">
+                <h3>健康建议:</h3>
+                <p id="advice-text">根据您的BMI结果，这里将提供相应的健康建议。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateBMI() {
+            const weightInput = document.getElementById('weight');
+            const heightInput = document.getElementById('height');
+            const heightUnit = document.getElementById('height-unit').value;
+
+            const weightError = document.getElementById('weight-error');
+            const heightError = document.getElementById('height-error');
+
+            let isValid = true;
+
+            // Validate weight
+            const weight = parseFloat(weightInput.value);
+            if (isNaN(weight) || weight <= 0) {
+                weightError.style.display = 'block';
+                isValid = false;
+            } else {
+                weightError.style.display = 'none';
+            }
+
+            // Validate height
+            let height = parseFloat(heightInput.value);
+            if (isNaN(height) || height <= 0) {
+                heightError.style.display = 'block';
+                isValid = false;
+            } else {
+                heightError.style.display = 'none';
+            }
+
+            if (!isValid) {
+                document.getElementById('result-section').style.display = 'none';
+                return;
+            }
+
+            // Convert height to meters if in cm
+            if (heightUnit === 'cm') {
+                height /= 100;
+            }
+
+            const bmi = weight / (height * height);
+            const bmiValueElement = document.getElementById('bmi-value');
+            const statusAssessmentElement = document.getElementById('status-assessment');
+            const healthAdviceElement = document.getElementById('advice-text');
+            const resultSection = document.getElementById('result-section');
+            const bmiIndicator = document.getElementById('bmi-indicator');
+
+            bmiValueElement.textContent = bmi.toFixed(2);
+            resultSection.style.display = 'block';
+
+            let status = '';
+            let advice = '';
+            let statusClass = '';
+
+            if (bmi < 18.5) {
+                status = '偏瘦';
+                statusClass = 'underweight';
+                advice = '您的BMI偏低，建议增加均衡营养的摄入，并适度进行力量训练以增加肌肉量。如有健康疑虑，请咨询医生或营养师。';
+            } else if (bmi >= 18.5 && bmi < 24) {
+                status = '正常';
+                statusClass = 'normal';
+                advice = '您的BMI处于正常范围，请继续保持健康的生活方式，包括均衡饮食和规律运动。';
+            } else if (bmi >= 24 && bmi < 28) {
+                status = '过重';
+                statusClass = 'overweight';
+                advice = '您的BMI偏高，建议调整饮食结构，减少高热量食物摄入，并增加有氧运动。逐步达到健康体重。';
+            } else {
+                status = '肥胖';
+                statusClass = 'obese';
+                advice = '您的BMI属于肥胖范围，这可能增加健康风险。强烈建议您寻求专业医生或营养师的帮助，制定个性化的减重计划，并积极进行运动。';
+            }
+
+            statusAssessmentElement.textContent = status;
+            statusAssessmentElement.className = 'status-assessment ' + statusClass;
+            healthAdviceElement.textContent = advice;
+
+            // Update BMI indicator position
+            // Assuming BMI max value for chart display is around 40-50 for visual representation
+            // Let's map BMI 0-40 to 0-100% of the chart width
+            const maxBmiForChart = 40; // Adjust this value based on desired chart scale
+            let indicatorPosition = (bmi / maxBmiForChart) * 100;
+            if (indicatorPosition < 0) indicatorPosition = 0;
+            if (indicatorPosition > 100) indicatorPosition = 100;
+            bmiIndicator.style.left = indicatorPosition + '%';
+        }
+    </script>
+</body>
+</html>
