@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机决策工具</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+        .section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fdfdfd;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 1.5em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* 选项输入 */
+        .options-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .options-input input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            min-width: 150px;
+        }
+        .options-input button {
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .options-input button:hover {
+            background-color: #218838;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .options-list li {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            color: #495057;
+            transition: background-color 0.3s ease;
+        }
+        .options-list li:hover {
+            background-color: #dee2e6;
+        }
+        .options-list li .edit-btn,
+        .options-list li .delete-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 0 5px;
+            transition: color 0.3s ease;
+        }
+        .options-list li .delete-btn {
+            color: #dc3545;
+        }
+        .options-list li .edit-btn:hover {
+            color: #0056b3;
+        }
+        .options-list li .delete-btn:hover {
+            color: #c82333;
+        }
+
+        /* 决策模式 */
+        .decision-modes {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .decision-modes button {
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            min-width: 150px;
+        }
+        .decision-modes button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .decision-modes button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* 结果显示 */
+        .result-display {
+            text-align: center;
+            margin-top: 20px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #e9f7ff;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px dashed #a0d9ff;
+        }
+        .result-display p {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .result-display.highlighted p {
+            animation: resultHighlight 1s ease-in-out forwards;
+        }
+
+        /* 转盘 */
+        .wheel-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+            min-height: 300px; /* Ensure space for wheel */
+        }
+        .wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 8px solid #007bff;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); /* Slower, smoother spin */
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.4);
+        }
+        .wheel-segment {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 50%;
+            transform-origin: 0% 100%;
+            overflow: hidden;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .wheel-segment::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 200%;
+            height: 200%;
+            border-radius: 50%;
+            transform: skewY(90deg);
+            background: var(--segment-color);
+        }
+        .wheel-segment span {
+            position: relative;
+            transform: rotate(var(--text-rotate)) translate(70px); /* Adjust text position */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80%;
+        }
+        .wheel-pointer {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 25px solid #dc3545;
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        /* 历史记录 */
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+        }
+        .history-list li {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95em;
+            color: #555;
+        }
+        .history-list li:last-child {
+            border-bottom: none;
+        }
+        .history-list li span {
+            font-weight: 500;
+            color: #007bff;
+        }
+        .history-list li .delete-history-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1em;
+            transition: color 0.3s ease;
+        }
+        .history-list li .delete-history-btn:hover {
+            color: #c82333;
+        }
+
+        /* 设置 */
+        .settings {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .settings label {
+            font-size: 1em;
+            color: #555;
+        }
+        .settings input[type="checkbox"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes resultHighlight {
+            0% { background-color: #e9f7ff; transform: scale(1); }
+            50% { background-color: #d0eaff; transform: scale(1.05); }
+            100% { background-color: #e9f7ff; transform: scale(1); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                gap: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .section h2 {
+                font-size: 1.3em;
+            }
+            .options-input {
+                flex-direction: column;
+            }
+            .decision-modes {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .decision-modes button {
+                width: 100%;
+                padding: 12px 20px;
+            }
+            .result-display p {
+                font-size: 1.5em;
+            }
+            .wheel {
+                width: 250px;
+                height: 250px;
+            }
+            .wheel-segment span {
+                transform: rotate(var(--text-rotate)) translate(55px);
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .section {
+                padding: 15px;
+            }
+            .options-input input[type="text"],
+            .options-input button {
+                padding: 10px 12px;
+            }
+            .options-list li {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            .wheel {
+                width: 200px;
+                height: 200px;
+            }
+            .wheel-segment span {
+                transform: rotate(var(--text-rotate)) translate(45px);
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>随机决策工具</h1>
+
+        <div class="section">
+            <h2>选项管理</h2>
+            <div class="options-input">
+                <input type="text" id="optionInput" placeholder="输入选项（例如：吃饭、睡觉）" maxlength="50">
+                <button id="addOptionBtn">添加选项</button>
+            </div>
+            <ul id="optionsList" class="options-list">
+                <!-- 选项将在这里动态添加 -->
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>决策模式</h2>
+            <div class="decision-modes">
+                <button id="simpleModeBtn">简单模式</button>
+                <button id="wheelModeBtn">转盘模式</button>
+            </div>
+            <div class="result-display" id="resultDisplay">
+                <p>点击上方按钮开始决策</p>
+            </div>
+            <div class="wheel-container" id="wheelContainer" style="display: none;">
+                <div class="wheel" id="wheel"></div>
+                <div class="wheel-pointer"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>决策历史</h2>
+            <ul id="historyList" class="history-list">
+                <!-- 历史记录将在这里动态添加 -->
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>设置</h2>
+            <div class="settings">
+                <input type="checkbox" id="soundToggle" checked>
+                <label for="soundToggle">启用声音效果</label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const optionInput = document.getElementById('optionInput');
+        const addOptionBtn = document.getElementById('addOptionBtn');
+        const optionsList = document.getElementById('optionsList');
+        const simpleModeBtn = document.getElementById('simpleModeBtn');
+        const wheelModeBtn = document.getElementById('wheelModeBtn');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const wheelContainer = document.getElementById('wheelContainer');
+        const wheel = document.getElementById('wheel');
+        const historyList = document.getElementById('historyList');
+        const soundToggle = document.getElementById('soundToggle');
+
+        let options = [];
+        const history = JSON.parse(localStorage.getItem('decisionHistory')) || [];
+        const maxHistory = 5;
+        let isSpinning = false;
+
+        // 声音效果
+        const spinSound = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3'); // Placeholder sound
+        const resultSound = new Audio('https://www.soundjay.com/misc/sounds/success-sound-effect.mp3'); // Placeholder sound
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderOptions();
+            renderHistory();
+            soundToggle.checked = localStorage.getItem('soundEnabled') !== 'false';
+        });
+
+        // 添加选项
+        addOptionBtn.addEventListener('click', addOption);
+        optionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addOption();
+            }
+        });
+
+        function addOption() {
+            const value = optionInput.value.trim();
+            if (value && options.length < 10) {
+                options.push(value);
+                optionInput.value = '';
+                renderOptions();
+            } else if (options.length >= 10) {
+                alert('最多只能添加10个选项！');
+            }
+        }
+
+        // 渲染选项列表
+        function renderOptions() {
+            optionsList.innerHTML = '';
+            options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${option}</span>
+                    <button class="edit-btn" data-index="${index}">✏️</button>
+                    <button class="delete-btn" data-index="${index}">❌</button>
+                `;
+                optionsList.appendChild(li);
+            });
+            updateDecisionButtonsState();
+            renderWheel(); // 选项变化时重新渲染转盘
+        }
+
+        // 删除/编辑选项
+        optionsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const index = parseInt(e.target.dataset.index);
+                if (options.length > 2) {
+                    options.splice(index, 1);
+                    renderOptions();
+                } else {
+                    alert('至少需要保留2个选项！');
+                }
+            } else if (e.target.classList.contains('edit-btn')) {
+                const index = parseInt(e.target.dataset.index);
+                const currentOption = options[index];
+                const newValue = prompt('编辑选项:', currentOption);
+                if (newValue !== null && newValue.trim() !== '') {
+                    options[index] = newValue.trim();
+                    renderOptions();
+                }
+            }
+        });
+
+        // 更新决策按钮状态
+        function updateDecisionButtonsState() {
+            const isDisabled = options.length < 2;
+            simpleModeBtn.disabled = isDisabled;
+            wheelModeBtn.disabled = isDisabled;
+            if (isDisabled) {
+                resultDisplay.querySelector('p').textContent = '请至少添加2个选项';
+            } else if (!isSpinning) {
+                resultDisplay.querySelector('p').textContent = '点击上方按钮开始决策';
+            }
+        }
+
+        // 简单模式
+        simpleModeBtn.addEventListener('click', () => {
+            if (options.length < 2) return;
+            wheelContainer.style.display = 'none';
+            const randomIndex = Math.floor(Math.random() * options.length);
+            const result = options[randomIndex];
+            displayResult(result);
+            addHistory(result, '简单模式');
+            if (soundToggle.checked) {
+                resultSound.play();
+            }
+        });
+
+        // 转盘模式
+        wheelModeBtn.addEventListener('click', () => {
+            if (options.length < 2 || isSpinning) return;
+            wheelContainer.style.display = 'flex';
+            isSpinning = true;
+            simpleModeBtn.disabled = true;
+            wheelModeBtn.disabled = true;
+            resultDisplay.querySelector('p').textContent = '转盘正在旋转...';
+            resultDisplay.classList.remove('highlighted');
+
+            if (soundToggle.checked) {
+                spinSound.play();
+            }
+
+            const randomIndex = Math.floor(Math.random() * options.length);
+            const selectedOption = options[randomIndex];
+
+            // 计算旋转角度
+            const totalDegrees = 360;
+            const segmentDegrees = totalDegrees / options.length;
+            const targetDegree = totalDegrees * 5 + (totalDegrees - (randomIndex * segmentDegrees + segmentDegrees / 2)); // 至少转5圈，并指向目标选项中心
+
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+            wheel.style.transform = `rotate(${targetDegree}deg)`;
+
+            wheel.addEventListener('transitionend', () => {
+                isSpinning = false;
+                simpleModeBtn.disabled = false;
+                wheelModeBtn.disabled = false;
+                displayResult(selectedOption);
+                addHistory(selectedOption, '转盘模式');
+                if (soundToggle.checked) {
+                    resultSound.play();
+                }
+                // 重置转盘位置，以便下次旋转时从0度开始，避免累积旋转角度
+                wheel.style.transition = 'none';
+                wheel.style.transform = `rotate(${targetDegree % 360}deg)`;
+            }, { once: true });
+        });
+
+        // 渲染转盘
+        function renderWheel() {
+            wheel.innerHTML = '';
+            if (options.length === 0) {
+                wheelContainer.style.display = 'none';
+                return;
+            }
+
+            const totalSegments = options.length;
+            const segmentAngle = 360 / totalSegments;
+            const colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+                '#F7CAC9', '#88B04B', '#F3E0BE', '#B5EAD7', '#C7CEEA'
+            ]; // 更多颜色
+
+            options.forEach((option, index) => {
+                const segment = document.createElement('div');
+                segment.classList.add('wheel-segment');
+                segment.style.transform = `rotate(${index * segmentAngle}deg) skewY(${90 - segmentAngle}deg)`;
+                segment.style.setProperty('--segment-color', colors[index % colors.length]);
+                segment.style.setProperty('--text-rotate', `${segmentAngle / 2 + 90}deg`); // 文本旋转角度
+
+                const span = document.createElement('span');
+                span.textContent = option;
+                segment.appendChild(span);
+                wheel.appendChild(segment);
+            });
+        }
+
+        // 显示结果
+        function displayResult(result) {
+            resultDisplay.querySelector('p').textContent = `决策结果：${result}`;
+            resultDisplay.classList.add('highlighted');
+            setTimeout(() => {
+                resultDisplay.classList.remove('highlighted');
+            }, 1500);
+        }
+
+        // 添加历史记录
+        function addHistory(result, mode) {
+            const timestamp = new Date().toLocaleString();
+            history.unshift({ result, mode, timestamp });
+            if (history.length > maxHistory) {
+                history.pop();
+            }
+            localStorage.setItem('decisionHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // 渲染历史记录
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = '暂无历史记录';
+                historyList.appendChild(li);
+                return;
+            }
+            history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item.result}</span>
+                    <span>(${item.mode} - ${item.timestamp})</span>
+                    <button class="delete-history-btn" data-index="${index}">❌</button>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+
+        // 删除历史记录
+        historyList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-history-btn')) {
+                const index = parseInt(e.target.dataset.index);
+                history.splice(index, 1);
+                localStorage.setItem('decisionHistory', JSON.stringify(history));
+                renderHistory();
+            }
+        });
+
+        // 声音开关
+        soundToggle.addEventListener('change', () => {
+            localStorage.setItem('soundEnabled', soundToggle.checked);
+        });
+
+        // 初始添加一些示例选项
+        options = ["选项A", "选项B", "选项C"];
+        renderOptions();
+
+    </script>
+</body>
+</html>
+
+
