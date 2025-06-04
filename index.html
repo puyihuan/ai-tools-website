@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逍遥小欢 - 借助AI放大商业化</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            margin: 0;
+            background-color: #f8f8f8;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #fff;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-left: 20px;
+        }
+        header nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+        }
+        header .auth-buttons {
+            margin-right: 20px;
+        }
+        header .auth-buttons button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        header .auth-buttons .login {
+            background-color: #f0f0f0;
+            color: #333;
+            margin-right: 10px;
+        }
+        header .auth-buttons .register {
+            background-color: #ff8c00;
+            color: #fff;
+        }
+        .hero-section {
+            text-align: center;
+            padding: 80px 20px;
+            background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+            border-bottom: 1px solid #ddd;
+        }
+        .hero-section h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .hero-section p {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .hero-section .buttons button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+        .hero-section .buttons .explore {
+            background-color: #ff8c00;
+            color: #fff;
+        }
+        .hero-section .buttons .view-works {
+            background-color: #fff;
+            color: #ff8c00;
+            border: 1px solid #ff8c00;
+        }
+        .stats-section {
+            display: flex;
+            justify-content: space-around;
+            padding: 50px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        .stats-item {
+            text-align: center;
+        }
+        .stats-item .number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff8c00;
+        }
+        .stats-item .label {
+            font-size: 18px;
+            color: #666;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 40px;
+            padding-top: 60px;
+        }
+        .tutorial-section {
+            background-color: #f0f0f0;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .tutorial-section .card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .tutorial-section h2 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .tutorial-section ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .tutorial-section ul li {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 30px;
+        }
+        .tutorial-section ul li::before {
+            content: '✔';
+            color: #28a745;
+            position: absolute;
+            left: 0;
+        }
+        .tutorial-section button {
+            background-color: #ff8c00;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .projects-grid, .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+        .project-card, .tool-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 25px;
+            text-align: left;
+        }
+        .project-card h3, .tool-card h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .project-card p, .tool-card p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .project-card .tags span, .tool-card .tags span {
+            display: inline-block;
+            background-color: #e0e0e0;
+            color: #555;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .project-card a, .tool-card a {
+            color: #ff8c00;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .my-tools-section {
+            padding: 60px 20px;
+            background-color: #f0f0f0;
+        }
+        .my-tools-section ul {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .my-tools-section ul li {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        .my-tools-section ul li a {
+            text-decoration: none;
+            color: #ff8c00;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        footer .footer-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        footer .footer-links div {
+            margin: 0 20px;
+            text-align: left;
+        }
+        footer .footer-links h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #ff8c00;
+        }
+        footer .footer-links a {
+            display: block;
+            color: #ccc;
+            text-decoration: none;
+            margin-bottom: 5px;
+        }
+        footer .copyright {
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">逍遥小欢</div>
+        <nav>
+            <a href="#">首页</a>
+            <a href="#">项目</a>
+            <a href="#">工具库</a>
+            <a href="#">创意集市</a>
+            <a href="#">博客</a>
+            <a href="#">关于</a>
+        </nav>
+        <div class="auth-buttons">
+            <button class="login">登录</button>
+            <button class="register">注册</button>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <h1>借助AI放大商业化</h1>
+        <p>通过67精选工具、AI应用和创意项目，构建可持续的个人商业生态，<br>让每个创作者都能在AI时代找到属于自己的商业价值</p>
+        <div class="buttons">
+            <button class="explore">开始探索工具</button>
+            <button class="view-works">查看创意作品</button>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="stats-item">
+            <div class="number">67+</div>
+            <div class="label">实用工具</div>
+        </div>
+        <div class="stats-item">
+            <div class="number">27+</div>
+            <div class="label">活跃用户</div>
+        </div>
+        <div class="stats-item">
+            <div class="number">15+</div>
+            <div class="label">创意作品</div>
+        </div>
+        <div class="stats-item">
+            <div class="number">15+</div>
+            <div class="label">代码分享</div>
+        </div>
+    </section>
+
+    <section class="tutorial-section">
+        <div class="card">
+            <h2>AI小工具制作专业教程</h2>
+            <p>从零开始学习制作本站上的50+高品质AI工具，包括计算器、图像处理、互动游戏等多种实用工具，无需编程经验也能快速上手！</p>
+            <ul>
+                <li>零基础入门：专为普通人设计，一步步教你开发各类实用工具</li>
+                <li>实战案例：拆解图像转换、财务计算、健康追踪等20+工具的制作过程</li>
+                <li>变现指导：掌握小工具开发，开启你的商业收入新渠道</li>
+            </ul>
+            <button>探索实用工具</button>
+        </div>
+    </section>
+
+    <section class="section-title">精选项目展示</section>
+    <section class="projects-grid container">
+        <div class="project-card">
+            <h3>AI创意集市</h3>
+            <p>展示用户创建的15+精美HTML页面，构建AI时代的创意分享平台</p>
+            <div class="tags">
+                <span>Next.js</span>
+                <span>Supabase</span>
+                <span>AI</span>
+                <span>创意分享</span>
+            </div>
+            <a href="#">查看项目 →</a>
+        </div>
+        <div class="project-card">
+            <h3>AI工具集合站</h3>
+            <p>集成67+实用AI工具，覆盖开发、金融、图像、生活等多个领域</p>
+            <div class="tags">
+                <span>工具集成</span>
+                <span>TypeScript</span>
+                <span>React</span>
+                <span>多领域应用</span>
+            </div>
+            <a href="#">查看项目 →</a>
+        </div>
+        <div class="project-card">
+            <h3>HTML代码分享平台</h3>
+            <p>支持在线编写、运行和分享HTML代码，为开发者提供便捷的展示平台</p>
+            <div class="tags">
+                <span>代码分享</span>
+                <span>HTML</span>
+                <span>在线编辑</span>
+                <span>SEO优化</span>
+            </div>
+            <a href="#">查看项目 →</a>
+        </div>
+        <div class="project-card">
+            <h3>AI提示词库</h3>
+            <p>精选AI提示词资源，助力创作者快速生成高质量内容</p>
+            <div class="tags">
+                <span>AI提示词</span>
+                <span>内容创作</span>
+                <span>资源库</span>
+                <span>创意激发</span>
+            </div>
+            <a href="#">查看项目 →</a>
+        </div>
+    </section>
+
+    <section class="section-title">我的小工具</section>
+    <section class="my-tools-section container">
+        <ul>
+            <li><a href="Project/Project01/word_count_tool.html">文章字数统计工具</a></li>
+            <li><a href="Project/Project02/text_encryption_tool.html">文本加密解密工具</a></li>
+            <li><a href="Project/Project04/bmi_calculator.html">BMI计算器</a></li>
+            <li><a href="Project/Project05/currency_converter.html">货币转换器</a></li>
+            <li><a href="Project/Project06/unit_converter.html">单位转换器</a></li>
+            <li><a href="Project/Project07/random_decision_tool.html">随机决策工具</a></li>
+            <li><a href="Project/Project08/holiday_countdown.html">节日倒计时</a></li>
+            <li><a href="Project/Project09/personalized_blessing_tool.html">个性化祝福语生成器</a></li>
+            <li><a href="Project/project10/qrcode_generator.html">二维码生成器</a></li>
+            <li><a href="Project/project11/color_tool.html">颜色工具</a></li>
+            <li><a href="Project/project12/image_watermark_tool.html">图片水印工具</a></li>
+            <li><a href="Project/project13/simple_photo_album.html">简易相册</a></li>
+            <li><a href="Project/project14/finance_tracker.html">理财预算追踪器</a></li>
+            <li><a href="Project/project15/memory_game.html">记忆翻牌游戏</a></li>
+            <li><a href="Project/project16/sudoku_game.html">数独游戏</a></li>
+            <li><a href="Project/project17/word_puzzle_game.html">单词拼图游戏</a></li>
+            <li><a href="Project/project18/couple_photo_wall.html">情侣照片墙</a></li>
+            <li><a href="Project/project19/love_confession_letter.html">心动告白信</a></li>
+            <li><a href="Project/Project21/夸克分享文案生成器.html">夸克分享文案生成器</a></li>
+        </ul>
+    </section>
+
+    <section class="section-title">探索更多工具分类</section>
+    <section class="tools-grid container">
+        <div class="tool-card">
+            <h3>金融计算</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>图像处理</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>游戏娱乐</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>AI智能</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>开发工具</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>生活助手</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>文档处理</h3>
+            <p>多个</p>
+        </div>
+        <div class="tool-card">
+            <h3>女性健康</h3>
+            <p>多个</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-links">
+            <div>
+                <h4>副业AI</h4>
+                <p>通过价值输出、副业项目、内容产品和AI工具，构建可持续的个人商业生态。</p>
+            </div>
+            <div>
+                <h4>快速链接</h4>
+                <a href="#">项目</a>
+                <a href="#">工具库</a>
+                <a href="#">关于我</a>
+                <a href="#">我的账户</a>
+            </div>
+            <div>
+                <h4>资源</h4>
+                <a href="#">预约咨询</a>
+                <a href="#">下载资料</a>
+                <a href="#">服务条款</a>
+                <a href="#">隐私政策</a>
+            </div>
+            <div>
+                <h4>保持联系</h4>
+                <a href="#">GitHub</a>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2025 副业AI (fuyeai.cn). 保留所有权利。
+        </div>
+    </footer>
+</body>
+</html>

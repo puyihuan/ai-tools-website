@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词拼图游戏</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .game-board {
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 320px; /* 5 letters * 60px + 4 gaps * 5px */
+            margin-bottom: 20px;
+        }
+        .word-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        .letter-box {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #d3d6da;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        .letter-box.correct {
+            background-color: #6aaa64; /* Green */
+            border-color: #6aaa64;
+            color: white;
+        }
+        .letter-box.present {
+            background-color: #c9b458; /* Yellow */
+            border-color: #c9b458;
+            color: white;
+        }
+        .letter-box.absent {
+            background-color: #787c7e; /* Gray */
+            border-color: #787c7e;
+            color: white;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 450px;
+        }
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+        .key {
+            flex-grow: 1;
+            height: 50px;
+            background-color: #d3d6da;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .key:hover {
+            background-color: #c5c8cc;
+        }
+        .key.large {
+            flex-grow: 1.5;
+        }
+        .key.correct {
+            background-color: #6aaa64;
+            color: white;
+        }
+        .key.present {
+            background-color: #c9b458;
+            color: white;
+        }
+        .key.absent {
+            background-color: #787c7e;
+            color: white;
+        }
+
+        .message {
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            min-height: 30px;
+        }
+        .new-game-btn {
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 20px;
+        }
+        .new-game-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .letter-box {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8em;
+            }
+            .game-board {
+                max-width: 280px; /* 5 * 50px + 4 * 7px */
+            }
+            .key {
+                height: 45px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>单词拼图</h1>
+        <div class="game-board" id="gameBoard">
+            <!-- Rows and letter boxes will be generated here -->
+        </div>
+        <div class="keyboard" id="keyboard">
+            <div class="keyboard-row">
+                <button class="key">Q</button>
+                <button class="key">W</button>
+                <button class="key">E</button>
+                <button class="key">R</button>
+                <button class="key">T</button>
+                <button class="key">Y</button>
+                <button class="key">U</button>
+                <button class="key">I</button>
+                <button class="key">O</button>
+                <button class="key">P</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key">A</button>
+                <button class="key">S</button>
+                <button class="key">D</button>
+                <button class="key">F</button>
+                <button class="key">G</button>
+                <button class="key">H</button>
+                <button class="key">J</button>
+                <button class="key">K</button>
+                <button class="key">L</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key large" data-key="enter">Enter</button>
+                <button class="key">Z</button>
+                <button class="key">X</button>
+                <button class="key">C</button>
+                <button class="key">V</button>
+                <button class="key">B</button>
+                <button class="key">N</button>
+                <button class="key">M</button>
+                <button class="key large" data-key="backspace">⌫</button>
+            </div>
+        </div>
+        <p id="message" class="message"></p>
+        <button id="newGameBtn" class="new-game-btn">新游戏</button>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const keyboard = document.getElementById('keyboard');
+        const messageDisplay = document.getElementById('message');
+        const newGameBtn = document.getElementById('newGameBtn');
+
+        const WORD_LENGTH = 5;
+        const MAX_ATTEMPTS = 6;
+
+        // 预设单词库 (5个字母的常见单词)
+        const wordList = [
+            "APPLE", "BAKER", "CANDY", "DREAM", "EAGLE", "FIGHT", "GRAPE", "HOUSE", "IDEAL", "JOLLY",
+            "KNIFE", "LIGHT", "MAGIC", "NIGHT", "OCEAN", "PLANT", "QUEEN", "RIVER", "STONE", "TIGER",
+            "UNION", "VITAL", "WORLD", "YOUTH", "ZEBRA", "ABOVE", "BLAST", "CRANE", "DRIVE", "ENJOY",
+            "FLAME", "GLORY", "HEART", "INDEX", "JUMPY", "KITES", "LEMON", "MERRY", "NOBLE", "OASIS",
+            "PEACE", "QUICK", "ROBOT", "SHINE", "TRUTH", "UNITY", "VOWEL", "WASTE", "XENON", "YACHT",
+            "ZONAL"
+        ];
+
+        let targetWord = '';
+        let currentGuess = [];
+        let currentRow = 0;
+        let gameOver = false;
+
+        document.addEventListener('DOMContentLoaded', initGame);
+        newGameBtn.addEventListener('click', initGame);
+        keyboard.addEventListener('click', handleKeyboardClick);
+        document.addEventListener('keydown', handlePhysicalKeyboard);
+
+        function initGame() {
+            targetWord = selectRandomWord();
+            currentGuess = [];
+            currentRow = 0;
+            gameOver = false;
+            messageDisplay.textContent = '';
+            resetBoard();
+            resetKeyboardColors();
+            console.log("目标单词 (仅供调试):", targetWord); // For debugging
+        }
+
+        function selectRandomWord() {
+            return wordList[Math.floor(Math.random() * wordList.length)];
+        }
+
+        function resetBoard() {
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < MAX_ATTEMPTS; i++) {
+                const row = document.createElement('div');
+                row.classList.add('word-row');
+                for (let j = 0; j < WORD_LENGTH; j++) {
+                    const box = document.createElement('div');
+                    box.classList.add('letter-box');
+                    row.appendChild(box);
+                }
+                gameBoard.appendChild(row);
+            }
+        }
+
+        function resetKeyboardColors() {
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'absent');
+            });
+        }
+
+        function handleKeyboardClick(event) {
+            if (gameOver) return;
+            const key = event.target.textContent;
+            handleInput(key);
+        }
+
+        function handlePhysicalKeyboard(event) {
+            if (gameOver) return;
+            const key = event.key;
+            handleInput(key);
+        }
+
+        function handleInput(key) {
+            if (key === 'Enter') {
+                if (currentGuess.length === WORD_LENGTH) {
+                    checkGuess();
+                } else {
+                    showMessage('单词长度不足！');
+                }
+            } else if (key === 'Backspace' || key === '⌫') {
+                currentGuess.pop();
+                updateBoard();
+            } else if (key.length === 1 && key.match(/[a-zA-Z]/)) {
+                if (currentGuess.length < WORD_LENGTH) {
+                    currentGuess.push(key.toUpperCase());
+                    updateBoard();
+                }
+            }
+        }
+
+        function updateBoard() {
+            const currentRowBoxes = gameBoard.children[currentRow].children;
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                currentRowBoxes[i].textContent = currentGuess[i] || '';
+            }
+        }
+
+        function checkGuess() {
+            const guessWord = currentGuess.join('');
+            const currentRowBoxes = gameBoard.children[currentRow].children;
+            const targetWordLetters = targetWord.split('');
+            const guessWordLetters = guessWord.split('');
+
+            // Initialize status for each letter in the guess
+            const letterStatus = Array(WORD_LENGTH).fill('absent');
+            const targetWordCounts = {};
+            for (const char of targetWordLetters) {
+                targetWordCounts[char] = (targetWordCounts[char] || 0) + 1;
+            }
+
+            // First pass: Mark correct (green) letters
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                if (guessWordLetters[i] === targetWordLetters[i]) {
+                    letterStatus[i] = 'correct';
+                    targetWordCounts[guessWordLetters[i]]--;
+                }
+            }
+
+            // Second pass: Mark present (yellow) letters
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                if (letterStatus[i] === 'absent' && targetWordCounts[guessWordLetters[i]] > 0) {
+                    letterStatus[i] = 'present';
+                    targetWordCounts[guessWordLetters[i]]--;
+                }
+            }
+
+            // Apply colors to letter boxes and keyboard
+            for (let i = 0; i < WORD_LENGTH; i++) {
+                const box = currentRowBoxes[i];
+                const key = document.querySelector(`.key:not(.large)[data-key="${guessWordLetters[i]}"]`) ||
+                            document.querySelector(`.key:not(.large):contains("${guessWordLetters[i]}")`); // Fallback for keys without data-key
+
+                box.classList.add(letterStatus[i]);
+                if (key) {
+                    // Update keyboard key color based on priority (green > yellow > gray)
+                    if (key.classList.contains('correct')) {
+                        // Already green, do nothing
+                    } else if (key.classList.contains('present') && letterStatus[i] === 'correct') {
+                        key.classList.remove('present');
+                        key.classList.add('correct');
+                    } else if (letterStatus[i] === 'correct') {
+                        key.classList.remove('present', 'absent');
+                        key.classList.add('correct');
+                    } else if (key.classList.contains('present') && letterStatus[i] === 'absent') {
+                        // Already yellow, and new status is gray, keep yellow
+                    } else if (letterStatus[i] === 'present') {
+                        key.classList.remove('absent');
+                        key.classList.add('present');
+                    } else if (letterStatus[i] === 'absent' && !key.classList.contains('present') && !key.classList.contains('correct')) {
+                        key.classList.add('absent');
+                    }
+                }
+            }
+
+            if (guessWord === targetWord) {
+                showMessage('恭喜你，猜对了！🎉', true);
+                gameOver = true;
+            } else if (currentRow === MAX_ATTEMPTS - 1) {
+                showMessage(`游戏结束！正确答案是：${targetWord}`, false);
+                gameOver = true;
+            } else {
+                currentRow++;
+                currentGuess = [];
+            }
+        }
+
+        function showMessage(msg, isSuccess = false) {
+            messageDisplay.textContent = msg;
+            messageDisplay.style.color = isSuccess ? '#28a745' : '#dc3545';
+        }
+
+        // Add data-key attributes to keyboard buttons for easier selection
+        document.querySelectorAll('.keyboard-row .key:not(.large)').forEach(key => {
+            key.dataset.key = key.textContent;
+        });
+
+        // Initial game setup
+        initGame();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心动告白信</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Hide scrollbars for full-screen effects */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%); /* Initial romantic gradient */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .letter-container {
+            text-align: center;
+            padding: 30px;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2; /* Above particles */
+        }
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            color: #fff;
+            animation: fadeInScale 1.5s ease-out;
+        }
+        .confession-text {
+            font-size: 1.8em;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            min-height: 100px; /* Ensure space for typing effect */
+        }
+        .typing-text span {
+            opacity: 0;
+            display: inline-block;
+            transform: translateY(10px);
+            transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+        }
+        .typing-text span.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .final-statement {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffeb3b; /* Yellow for emphasis */
+            margin-top: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        .buttons-container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+        .action-button {
+            padding: 15px 40px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .yes-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        .yes-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        .no-button {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
+        .no-button:hover {
+            background-color: #da190b;
+            transform: scale(1.05);
+        }
+        .no-button.running {
+            animation: runAway 0.5s forwards;
+        }
+
+        /* Particle animation */
+        .heart-particle {
+            position: absolute;
+            background-color: #ff69b4; /* Hot pink */
+            border-radius: 50%;
+            opacity: 0;
+            animation: riseAndFade 5s forwards;
+            z-index: 1;
+        }
+        @keyframes riseAndFade {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 0) scale(0.2);
+                bottom: -10px;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -500px) scale(1);
+                bottom: 100%;
+            }
+        }
+
+        /* Full screen effects */
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: yellow;
+            border-radius: 50%;
+            opacity: 0;
+            animation: fireworkExplode 1s forwards;
+            z-index: 3;
+        }
+        @keyframes fireworkExplode {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .full-screen-heart {
+            position: absolute;
+            background-color: #ff69b4;
+            border-radius: 50%;
+            opacity: 0;
+            animation: heartPop 1s forwards;
+            z-index: 3;
+        }
+        @keyframes heartPop {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        /* Other animations */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes runAway {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(50px) translateY(-20px); }
+            50% { transform: translateX(-50px) translateY(20px); }
+            75% { transform: translateX(100px) translateY(-30px); }
+            100% { transform: translateX(2000px) translateY(-500px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .letter-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2.5em;
+            }
+            .confession-text {
+                font-size: 1.4em;
+            }
+            .final-statement {
+                font-size: 2em;
+            }
+            .action-button {
+                padding: 12px 30px;
+                font-size: 1.2em;
+            }
+            .buttons-container {
+                gap: 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            .letter-container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .confession-text {
+                font-size: 1.2em;
+            }
+            .final-statement {
+                font-size: 1.8em;
+            }
+            .action-button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+            .buttons-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="letter-container">
+        <h1>亲爱的 [TA的名字],</h1>
+        <p class="confession-text" id="confessionText"></p>
+        <p class="final-statement">你愿意成为我的 [另一半称谓] 吗？</p>
+
+        <div class="buttons-container">
+            <button class="action-button yes-button" id="yesBtn">YES! 我愿意！</button>
+            <button class="action-button no-button" id="noBtn">NO! 算了吧！</button>
+        </div>
+    </div>
+
+    <script>
+        const confessionTextElement = document.getElementById('confessionText');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+
+        const confessionContent = `
+            从我们相遇的那一刻起，我的世界就变得不一样了。
+            你的笑容，你的声音，你的一切都深深吸引着我。
+            和你在一起的每一天，都充满了阳光和快乐。
+            我喜欢你的善良，你的幽默，你的独特。
+            你让我成为了一个更好的人。
+            我希望，未来的日子里，我们能一起创造更多美好的回忆。
+            一起欢笑，一起成长，一起面对所有的挑战。
+        `;
+
+        let charIndex = 0;
+        let typingInterval;
+
+        function typeWriter() {
+            const text = confessionContent.trim();
+            if (charIndex < text.length) {
+                const char = text.charAt(charIndex);
+                const span = document.createElement('span');
+                span.textContent = char;
+                confessionTextElement.appendChild(span);
+                // Trigger animation for the new span
+                setTimeout(() => span.classList.add('visible'), 10); // Small delay for animation
+                charIndex++;
+                typingInterval = setTimeout(typeWriter, 80); // Adjust typing speed
+            } else {
+                clearInterval(typingInterval);
+            }
+        }
+
+        function createHeartParticle() {
+            const particle = document.createElement('div');
+            particle.classList.add('heart-particle');
+            const size = Math.random() * 20 + 10; // Size between 10px and 30px
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${Math.random() * 100}%`;
+            document.body.appendChild(particle);
+
+            particle.addEventListener('animationend', () => {
+                particle.remove();
+            });
+        }
+
+        function startHeartParticles() {
+            setInterval(createHeartParticle, 200); // Create a new particle every 200ms
+        }
+
+        function createFullScreenEffect(type, count) {
+            for (let i = 0; i < count; i++) {
+                const element = document.createElement('div');
+                element.classList.add(type);
+                element.style.left = `${Math.random() * 100}vw`;
+                element.style.top = `${Math.random() * 100}vh`;
+                const size = Math.random() * 30 + 10;
+                element.style.width = `${size}px`;
+                element.style.height = `${size}px`;
+                document.body.appendChild(element);
+
+                element.addEventListener('animationend', () => {
+                    element.remove();
+                });
+            }
+        }
+
+        yesBtn.addEventListener('click', () => {
+            messageDisplay.textContent = '太棒了！我爱你！❤️';
+            messageDisplay.style.color = '#ffeb3b';
+            createFullScreenEffect('full-screen-heart', 100);
+            createFullScreenEffect('firework', 50);
+            // Disable buttons after selection
+            yesBtn.disabled = true;
+            noBtn.disabled = true;
+            noBtn.classList.remove('running'); // Stop any running animation
+        });
+
+        noBtn.addEventListener('mouseover', () => {
+            if (!gameOver) { // Only run away if game is not over
+                const currentLeft = noBtn.getBoundingClientRect().left;
+                const currentTop = noBtn.getBoundingClientRect().top;
+                const newLeft = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+                const newTop = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+
+                // Apply a temporary class for animation
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = `${newLeft}px`;
+                noBtn.style.top = `${newTop}px`;
+                noBtn.style.transition = 'all 0.3s ease-out';
+            }
+        });
+
+        noBtn.addEventListener('click', () => {
+            messageDisplay.textContent = '💔 呜呜... 我会继续努力的！';
+            messageDisplay.style.color = '#f44336';
+            noBtn.classList.add('running'); // Trigger the "run away" animation
+            gameOver = true; // Prevent further interaction
+            yesBtn.disabled = true;
+            noBtn.disabled = true;
+        });
+
+        // Initial setup
+        typeWriter();
+        startHeartParticles();
+
+    </script>
+</body>
+</html>

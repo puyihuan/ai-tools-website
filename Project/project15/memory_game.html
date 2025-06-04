@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆翻牌游戏</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        .game-settings {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+        }
+        .game-settings label {
+            font-weight: 500;
+            color: #555;
+        }
+        .game-settings select,
+        .game-settings button {
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .game-settings select {
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        .game-settings button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .game-settings button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #444;
+            font-weight: 600;
+        }
+        .game-info span {
+            background-color: #e9f7ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #a0d9ff;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 10px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .card {
+            width: 100px; /* Default size */
+            height: 100px; /* Default size */
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: 8px;
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .card-front {
+            background-color: #007bff;
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .card-back {
+            background-color: #6c757d;
+            color: white;
+            font-size: 2em;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text x="50%" y="50%" font-family="Arial" font-size="60" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle">?</text></svg>');
+            background-size: 60%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .victory-message {
+            text-align: center;
+            font-size: 2.5em;
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 30px;
+            animation: bounceIn 1s ease-out;
+            display: none;
+        }
+
+        /* Responsive adjustments for card size and grid */
+        .game-board.grid-4x4 {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 440px; /* 4 * 100px + 3 * 10px */
+        }
+        .game-board.grid-6x6 {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 660px; /* 6 * 100px + 5 * 10px */
+        }
+        .game-board.grid-5x5 { /* For medium difficulty */
+            grid-template-columns: repeat(5, 1fr);
+            max-width: 550px; /* 5 * 100px + 4 * 10px */
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                gap: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .game-settings {
+                flex-direction: column;
+                align-items: center;
+            }
+            .game-info {
+                font-size: 1em;
+            }
+            .card {
+                width: 80px;
+                height: 80px;
+            }
+            .card-front, .card-back {
+                font-size: 2.5em;
+            }
+            .game-board.grid-4x4 {
+                max-width: 360px; /* 4 * 80px + 3 * 10px */
+            }
+            .game-board.grid-6x6 {
+                max-width: 540px; /* 6 * 80px + 5 * 10px */
+            }
+            .game-board.grid-5x5 {
+                max-width: 450px; /* 5 * 80px + 4 * 10px */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .card {
+                width: 60px;
+                height: 60px;
+            }
+            .card-front, .card-back {
+                font-size: 1.8em;
+            }
+            .game-board.grid-4x4 {
+                max-width: 270px; /* 4 * 60px + 3 * 10px */
+            }
+            .game-board.grid-6x6 {
+                max-width: 400px; /* 6 * 60px + 5 * 10px */
+            }
+            .game-board.grid-5x5 {
+                max-width: 320px; /* 5 * 60px + 4 * 10px */
+            }
+        }
+
+        /* Animations */
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>记忆翻牌游戏</h1>
+
+        <div class="game-settings">
+            <div>
+                <label for="difficulty">难度:</label>
+                <select id="difficulty">
+                    <option value="4x4">简单 (4x4)</option>
+                    <option value="5x5">中等 (5x5)</option>
+                    <option value="6x6">困难 (6x6)</option>
+                </select>
+            </div>
+            <div>
+                <label for="theme">主题:</label>
+                <select id="theme">
+                    <option value="emoji">Emoji 表情</option>
+                    <!-- <option value="animals">动物</option> -->
+                    <!-- <option value="fruits">水果</option> -->
+                </select>
+            </div>
+            <button id="startGameBtn">开始游戏</button>
+        </div>
+
+        <div class="game-info">
+            <span>尝试次数: <span id="attemptsCount">0</span></span>
+            <span>用时: <span id="timeElapsed">0s</span></span>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+
+        <div class="victory-message" id="victoryMessage">
+            恭喜你，全部匹配成功！🎉
+        </div>
+    </div>
+
+    <script>
+        const difficultySelect = document.getElementById('difficulty');
+        const themeSelect = document.getElementById('theme');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const attemptsCountSpan = document.getElementById('attemptsCount');
+        const timeElapsedSpan = document.getElementById('timeElapsed');
+        const gameBoard = document.getElementById('gameBoard');
+        const victoryMessage = document.getElementById('victoryMessage');
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let attempts = 0;
+        let timer;
+        let seconds = 0;
+        let lockBoard = false; // Prevent flipping more cards while two are open
+
+        const themes = {
+            emoji: ['😀', '😂', '😍', '🤩', '😎', '🥳', '🤯', '😴', '👍', '👏', '🚀', '🌈', '🍕', '🍔', '🍟', '🍩', '🍎', '🍌', '🍓', '🍇', '🍉', '🍊', '🍋', '🍒', '🍑', '🍍', '🥝', '🥑', '🥦', '🥕', '🌶️', '🍄', '🌸', '🌼', '🌻', '🌺', '🌍', '🌙', '⭐', '☀️']
+        };
+
+        startGameBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            const difficulty = difficultySelect.value;
+            const theme = themeSelect.value;
+            const emojis = themes[theme];
+
+            let numPairs;
+            let gridSizeClass;
+
+            if (difficulty === '4x4') {
+                numPairs = 8; // 16 cards total
+                gridSizeClass = 'grid-4x4';
+            } else if (difficulty === '5x5') {
+                numPairs = 12; // 24 cards total, need to adjust for odd grid
+                gridSizeClass = 'grid-5x5';
+            } else if (difficulty === '6x6') {
+                numPairs = 18; // 36 cards total
+                gridSizeClass = 'grid-6x6';
+            }
+
+            // Ensure enough emojis for the selected difficulty
+            if (emojis.length < numPairs) {
+                alert('所选主题的表情数量不足以支持当前难度，请选择其他主题或降低难度。');
+                return;
+            }
+
+            resetGame();
+            gameBoard.className = 'game-board ' + gridSizeClass; // Set grid class
+
+            // Create card values
+            let cardValues = emojis.slice(0, numPairs);
+            cardValues = [...cardValues, ...cardValues]; // Duplicate for pairs
+            shuffleArray(cardValues);
+
+            gameBoard.innerHTML = '';
+            cards = [];
+            cardValues.forEach((value, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.value = value;
+                cardElement.dataset.index = index;
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">${value}</div>
+                        <div class="card-back"></div>
+                    </div>
+                `;
+                cardElement.addEventListener('click', flipCard);
+                gameBoard.appendChild(cardElement);
+                cards.push(cardElement);
+            });
+
+            startTimer();
+        }
+
+        function resetGame() {
+            clearInterval(timer);
+            seconds = 0;
+            attempts = 0;
+            matchedPairs = 0;
+            flippedCards = [];
+            lockBoard = false;
+            attemptsCountSpan.textContent = '0';
+            timeElapsedSpan.textContent = '0s';
+            victoryMessage.style.display = 'none';
+            gameBoard.innerHTML = ''; // Clear board
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === flippedCards[0]) return; // Prevent double clicking the same card
+
+            this.classList.add('flipped');
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                attempts++;
+                attemptsCountSpan.textContent = attempts;
+                lockBoard = true;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = card1.dataset.value === card2.dataset.value;
+
+            if (isMatch) {
+                disableCards();
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            flippedCards.forEach(card => {
+                card.removeEventListener('click', flipCard);
+                card.classList.add('matched');
+            });
+            matchedPairs++;
+            resetFlippedCards();
+            checkWin();
+        }
+
+        function unflipCards() {
+            setTimeout(() => {
+                flippedCards.forEach(card => card.classList.remove('flipped'));
+                resetFlippedCards();
+            }, 1000); // Keep cards flipped for 1 second
+        }
+
+        function resetFlippedCards() {
+            [flippedCards, lockBoard] = [[], false];
+        }
+
+        function checkWin() {
+            const difficulty = difficultySelect.value;
+            let totalPairs;
+            if (difficulty === '4x4') totalPairs = 8;
+            else if (difficulty === '5x5') totalPairs = 12;
+            else if (difficulty === '6x6') totalPairs = 18;
+
+            if (matchedPairs === totalPairs) {
+                clearInterval(timer);
+                victoryMessage.style.display = 'block';
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timer); // Clear any existing timer
+            seconds = 0;
+            timeElapsedSpan.textContent = '0s';
+            timer = setInterval(() => {
+                seconds++;
+                timeElapsedSpan.textContent = `${seconds}s`;
+            }, 1000);
+        }
+
+        // Initial game setup
+        startGame();
+
+    </script>
+</body>
+</html>
